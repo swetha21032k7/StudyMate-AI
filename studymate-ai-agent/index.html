@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyMate AI - Smart Planning. Better Learning.</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .chat-bubble-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .chat-bubble-ai {
+            background: #f3f4f6;
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .difficulty-easy { background-color: #10b981; }
+        .difficulty-medium { background-color: #f59e0b; }
+        .difficulty-hard { background-color: #ef4444; }
+        
+        .timetable-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2);
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .typing-indicator span {
+            animation: typing 1.4s infinite;
+            display: inline-block;
+        }
+        
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .timer-display {
+            font-family: 'Courier New', monospace;
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .notification {
+            animation: slideInRight 0.4s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(400px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .badge-pulse {
+            animation: badgePulse 2s infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .chart-bar {
+            transition: all 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+            transform: scaleY(1.05);
+        }
+
+        .subject-card {
+            transition: all 0.3s ease;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app">
+        <!-- Auth Section -->
+        <div id="authSection" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+            <div class="glass-card rounded-2xl shadow-2xl w-full max-w-md p-8 slide-in">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-bg mb-4">
+                        <i class="fas fa-brain text-white text-2xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold gradient-text">StudyMate AI</h1>
+                    <p class="text-gray-500 mt-2">Smart Planning. Better Learning.</p>
+                </div>
+                
+                <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
+                    <button id="loginTab" onclick="showAuthTab('login')" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-white shadow text-gray-800">Login</button>
+                    <button id="signupTab" onclick="showAuthTab('signup')" class="flex-1 py-2 rounded-lg text-sm font-medium transition-all text-gray-500">Sign Up</button>
+                </div>
+                
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" id="loginEmail" required class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="you@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" id="loginPassword" required class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full py-3 gradient-bg text-white rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                </form>
+                
+                <form id="signupForm" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="signupName" required class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" id="signupEmail" required class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="you@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="password" id="signupPassword" required minlength="6" class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full py-3 gradient-bg text-white rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+                
+                <p id="authError" class="text-red-500 text-sm text-center mt-4 hidden"></p>
+                <p class="text-center text-gray-400 text-xs mt-6">Demo: Use any email/password to get started</p>
+            </div>
+        </div>
+        
+        <!-- Main Dashboard -->
+        <div id="dashboardSection" class="hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-sm sticky top-0 z-50">
+                <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+                            <i class="fas fa-brain text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-bold text-gray-800">StudyMate AI</h1>
+                            <p class="text-xs text-gray-500">Welcome, <span id="userName">Student</span></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button onclick="toggleTimer()" class="relative p-2 text-gray-600 hover:text-purple-600 transition" title="Pomodoro Timer">
+                            <i class="fas fa-hourglass-start text-xl"></i>
+                        </button>
+                        <button onclick="toggleChat()" class="relative p-2 text-gray-600 hover:text-purple-600 transition" title="AI Chat">
+                            <i class="fas fa-comment-dots text-xl"></i>
+                            <span class="absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white pulse-dot"></span>
+                        </button>
+                        <button onclick="showExportOptions()" class="relative p-2 text-gray-600 hover:text-purple-600 transition" title="Export">
+                            <i class="fas fa-download text-xl"></i>
+                        </button>
+                        <button onclick="handleLogout()" class="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="hidden sm:inline">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="max-w-7xl mx-auto px-4 py-6">
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                                <i class="fas fa-book text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-800" id="statSubjects">0</p>
+                                <p class="text-xs text-gray-500">Subjects</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-clock text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-800" id="statHours">0</p>
+                                <p class="text-xs text-gray-500">Hours/Day</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-800" id="statCompleted">0</p>
+                                <p class="text-xs text-gray-500">Sessions Done</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                                <i class="fas fa-fire text-orange-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-800" id="statStreak">0</p>
+                                <p class="text-xs text-gray-500">Day Streak</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content Grid -->
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <!-- Left Column -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <!-- Add Subject Card -->
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-purple-600"></i>
+                                Add Subject
+                            </h2>
+                            <form id="subjectForm" onsubmit="addSubject(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Subject Name</label>
+                                    <input type="text" id="subjectName" required class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm" placeholder="e.g., Mathematics">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Hours/Week</label>
+                                        <input type="number" id="subjectHours" required min="1" max="20" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm" placeholder="5">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+                                        <select id="subjectDifficulty" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm">
+                                            <option value="easy">Easy</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="hard">Hard</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Exam Date (Optional)</label>
+                                    <input type="date" id="subjectExamDate" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm">
+                                </div>
+                                <button type="submit" class="w-full py-2 gradient-bg text-white rounded-lg font-medium text-sm hover:opacity-90 transition">
+                                    Add Subject
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Study Preferences -->
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-cog text-purple-600"></i>
+                                Preferences
+                            </h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Study Hours/Day</label>
+                                    <input type="number" id="dailyHours" value="4" min="1" max="12" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Session Duration (mins)</label>
+                                    <select id="sessionDuration" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm">
+                                        <option value="25">25 mins (Pomodoro)</option>
+                                        <option value="45" selected>45 mins</option>
+                                        <option value="60">60 mins</option>
+                                        <option value="90">90 mins</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Break Duration (mins)</label>
+                                    <select id="breakDuration" class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm">
+                                        <option value="5">5 mins</option>
+                                        <option value="10" selected>10 mins</option>
+                                        <option value="15">15 mins</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Subject List -->
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-list text-purple-600"></i>
+                                Your Subjects
+                            </h2>
+                            <div id="subjectList" class="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
+                                <p class="text-gray-400 text-sm text-center py-4">No subjects added yet</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Generate Button -->
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="generateTimetable()" class="flex-1 py-3 gradient-bg text-white rounded-xl font-medium hover:opacity-90 transition flex items-center justify-center gap-2">
+                                <i class="fas fa-magic"></i>
+                                Generate AI Timetable
+                            </button>
+                            <button onclick="regenerateTimetable()" class="px-6 py-3 bg-white text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition border border-gray-200 flex items-center gap-2">
+                                <i class="fas fa-redo"></i>
+                                Regenerate
+                            </button>
+                        </div>
+                        
+                        <!-- Day Tabs -->
+                        <div class="bg-white rounded-xl shadow-sm p-4">
+                            <div class="flex gap-2 overflow-x-auto pb-2" id="dayTabs">
+                                <button onclick="selectDay(0)" class="day-tab px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap bg-purple-600 text-white">Monday</button>
+                                <button onclick="selectDay(1)" class="day-tab px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200">Tuesday</button>
+                                <button onclick="selectDay(2)" class="day-tab px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200">Wednesday</button>
+                                <button onclick="selectDay(3)" class="day-tab px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200">Thursday</button>
+                                <button onclick="selectDay(4)" class="day-tab px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200">Friday</button>
+                                <button onclick="selectDay(5)" class="day-tab px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200">Saturday</button>
+                                <button onclick="selectDay(6)" class="day-tab px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200">Sunday</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Timetable Display -->
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-calendar-alt text-purple-600"></i>
+                                <span id="selectedDayTitle">Monday's Schedule</span>
+                            </h2>
+                            <div id="timetableDisplay" class="space-y-3">
+                                <div class="text-center py-12 text-gray-400">
+                                    <i class="fas fa-calendar-plus text-4xl mb-3"></i>
+                                    <p>Add subjects and generate your AI timetable</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly Overview -->
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-chart-bar text-purple-600"></i>
+                                Weekly Overview
+                            </h2>
+                            <div id="weeklyOverview" class="grid grid-cols-7 gap-2">
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-2">Mon</p>
+                                    <div class="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-1">
+                                        <div class="chart-bar w-full bg-purple-200 rounded" style="height: 0%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-1">0h</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-2">Tue</p>
+                                    <div class="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-1">
+                                        <div class="chart-bar w-full bg-purple-200 rounded" style="height: 0%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-1">0h</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-2">Wed</p>
+                                    <div class="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-1">
+                                        <div class="chart-bar w-full bg-purple-200 rounded" style="height: 0%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-1">0h</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-2">Thu</p>
+                                    <div class="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-1">
+                                        <div class="chart-bar w-full bg-purple-200 rounded" style="height: 0%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-1">0h</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-2">Fri</p>
+                                    <div class="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-1">
+                                        <div class="chart-bar w-full bg-purple-200 rounded" style="height: 0%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-1">0h</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-2">Sat</p>
+                                    <div class="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-1">
+                                        <div class="chart-bar w-full bg-purple-200 rounded" style="height: 0%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-1">0h</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 mb-2">Sun</p>
+                                    <div class="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-1">
+                                        <div class="chart-bar w-full bg-purple-200 rounded" style="height: 0%"></div>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-1">0h</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Section -->
+                <div class="mt-6 bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-purple-600"></i>
+                        Subject Progress
+                    </h2>
+                    <div id="progressSection" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <p class="text-gray-400 text-sm col-span-2">Add subjects to track progress</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pomodoro Timer Modal -->
+        <div id="timerModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Pomodoro Timer</h2>
+                    <button onclick="toggleTimer()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="text-center mb-8">
+                    <div class="timer-display text-purple-600" id="timerDisplay">25:00</div>
+                    <p class="text-gray-600 mt-4" id="timerLabel">Study Time</p>
+                </div>
+
+                <div class="flex gap-3 mb-6">
+                    <button onclick="startTimer()" class="flex-1 py-3 gradient-bg text-white rounded-lg font-medium hover:opacity-90 transition">
+                        <i class="fas fa-play"></i> Start
+                    </button>
+                    <button onclick="pauseTimer()" class="flex-1 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                        <i class="fas fa-pause"></i> Pause
+                    </button>
+                    <button onclick="resetTimer()" class="flex-1 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Duration</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setTimerDuration(15)" class="py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-purple-100 transition text-sm font-medium">15m</button>
+                        <button onclick="setTimerDuration(25)" class="py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-purple-100 transition text-sm font-medium">25m</button>
+                        <button onclick="setTimerDuration(45)" class="py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-purple-100 transition text-sm font-medium">45m</button>
+                        <button onclick="setTimerDuration(60)" class="py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-purple-100 transition text-sm font-medium">60m</button>
+                    </div>
+                </div>
+
+                <div id="sessionCounter" class="text-center text-sm text-gray-600">
+                    Sessions completed today: <span class="font-bold" id="sessionCount">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Chat Sidebar -->
+        <div id="chatSidebar" class="fixed right-0 top-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50 flex flex-col">
+            <div class="gradient-bg p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-robot text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-white">StudyMate AI</h3>
+                        <p class="text-xs text-white/70 flex items-center gap-1">
+                            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                            Online
+                        </p>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="text-white/80 hover:text-white transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+                <div class="flex gap-3 slide-in">
+                    <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div class="chat-bubble-ai rounded-2xl rounded-tl-none p-4 max-w-[80%]">
+                        <p class="text-sm text-gray-700">Hello! I'm your StudyMate AI assistant. 👋</p>
+                        <p class="text-sm text-gray-700 mt-2">I can help you with:</p>
+                        <ul class="text-sm text-gray-600 mt-1 space-y-1">
+                            <li>• Explaining your study schedule</li>
+                            <li>• Answering subject questions</li>
+                            <li>• Productivity tips</li>
+                            <li>• Schedule improvements</li>
+                        </ul>
+                        <p class="text-sm text-gray-700 mt-2">How can I help you today?</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-4 py-2 border-t border-gray-100">
+                <div class="flex gap-2 overflow-x-auto pb-2">
+                    <button onclick="quickChat('Explain my schedule')" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs whitespace-nowrap hover:bg-purple-200 transition">Explain schedule</button>
+                    <button onclick="quickChat('Give me study tips')" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs whitespace-nowrap hover:bg-purple-200 transition">Study tips</button>
+                    <button onclick="quickChat('How to stay focused?')" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs whitespace-nowrap hover:bg-purple-200 transition">Stay focused</button>
+                    <button onclick="quickChat('Motivate me')" class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs whitespace-nowrap hover:bg-purple-200 transition">Motivate me</button>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-100">
+                <form onsubmit="sendMessage(event)" class="flex gap-2">
+                    <input type="text" id="chatInput" placeholder="Ask me anything..." class="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm">
+                    <button type="submit" class="px-4 py-3 gradient-bg text-white rounded-xl hover:opacity-90 transition">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="chatOverlay" onclick="toggleChat()" class="fixed inset-0 bg-black/50 z-40 hidden"></div>
+
+        <!-- Export Modal -->
+        <div id="exportModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Export Timetable</h2>
+                    <button onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <button onclick="exportToCSV()" class="w-full py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-file-csv"></i> Export as CSV
+                    </button>
+                    <button onclick="exportToPDF()" class="w-full py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-file-pdf"></i> Export as PDF
+                    </button>
+                    <button onclick="exportToJSON()" class="w-full py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-file-code"></i> Export as JSON
+                    </button>
+                    <button onclick="printTimetable()" class="w-full py-3 bg-purple-500 text-white rounded-lg font-medium hover:bg-purple-600 transition flex items-center justify-center gap-2">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Container -->
+        <div id="notificationContainer" class="fixed top-4 right-4 z-40 space-y-2"></div>
+    </div>
+
+    <script>
+        // ==================== STATE MANAGEMENT ====================
+        let currentUser = null;
+        let subjects = [];
+        let timetable = {};
+        let selectedDay = 0;
+        let completedSessions = 0;
+        let chatOpen = false;
+        let timerOpen = false;
+        let timerInterval = null;
+        let timerSeconds = 25 * 60;
+        let timerRunning = false;
+        let isBreakTime = false;
+        let sessionsToday = 0;
+        
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const subjectColors = [
+            'bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-orange-500', 
+            'bg-pink-500', 'bg-teal-500', 'bg-indigo-500', 'bg-red-500'
+        ];
+        
+        // ==================== AUTHENTICATION ====================
+        function showAuthTab(tab) {
+            const loginTab = document.getElementById('loginTab');
+            const signupTab = document.getElementById('signupTab');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            
+            if (tab === 'login') {
+                loginTab.classList.add('bg-white', 'shadow', 'text-gray-800');
+                loginTab.classList.remove('text-gray-500');
+                signupTab.classList.remove('bg-white', 'shadow', 'text-gray-800');
+                signupTab.classList.add('text-gray-500');
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+            } else {
+                signupTab.classList.add('bg-white', 'shadow', 'text-gray-800');
+                signupTab.classList.remove('text-gray-500');
+                loginTab.classList.remove('bg-white', 'shadow', 'text-gray-800');
+                loginTab.classList.add('text-gray-500');
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+            hideAuthError();
+        }
+        
+        function showAuthError(message) {
+            const errorEl = document.getElementById('authError');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+        
+        function hideAuthError() {
+            document.getElementById('authError').classList.add('hidden');
+        }
+        
+        function handleSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            
+            const users = JSON.parse(localStorage.getItem('studymate_users') || '{}');
+            if (users[email]) {
+                showAuthError('An account with this email already exists');
+                return;
+            }
+            
+            users[email] = { 
+                name, 
+                email, 
+                password, 
+                subjects: [], 
+                timetable: {}, 
+                completedSessions: 0, 
+                streak: 0,
+                createdAt: new Date().toISOString()
+            };
+            localStorage.setItem('studymate_users', JSON.stringify(users));
+            
+            loginUser(users[email]);
+        }
+        
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const users = JSON.parse(localStorage.getItem('studymate_users') || '{}');
+            
+            if (!users[email]) {
+                users[email] = { 
+                    name: email.split('@')[0], 
+                    email, 
+                    password, 
+                    subjects: [], 
+                    timetable: {}, 
+                    completedSessions: 0, 
+                    streak: 1,
+                    createdAt: new Date().toISOString()
+                };
+                localStorage.setItem('studymate_users', JSON.stringify(users));
+            }
+            
+            if (users[email].password !== password) {
+                showAuthError('Invalid password');
+                return;
+            }
+            
+            loginUser(users[email]);
+        }
+        
+        function loginUser(user) {
+            currentUser = user;
+            subjects = user.subjects || [];
+            timetable = user.timetable || {};
+            completedSessions = user.completedSessions || 0;
+            
+            localStorage.setItem('studymate_currentUser', user.email);
+            
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('userName').textContent = user.name;
+            
+            showNotification('Welcome back, ' + user.name + '!', 'success');
+            updateUI();
+        }
+        
+        function handleLogout() {
+            saveUserData();
+            currentUser = null;
+            subjects = [];
+            timetable = {};
+            localStorage.removeItem('studymate_currentUser');
+            
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+            
+            document.getElementById('loginForm').reset();
+            document.getElementById('signupForm').reset();
+            showNotification('Logged out successfully', 'info');
+        }
+        
+        function saveUserData() {
+            if (!currentUser) return;
+            const users = JSON.parse(localStorage.getItem('studymate_users') || '{}');
+            users[currentUser.email] = {
+                ...currentUser,
+                subjects,
+                timetable,
+                completedSessions
+            };
+            localStorage.setItem('studymate_users', JSON.stringify(users));
+        }
+        
+        // ==================== SUBJECTS ====================
+        function addSubject(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('subjectName').value;
+            const hours = parseInt(document.getElementById('subjectHours').value);
+            const difficulty = document.getElementById('subjectDifficulty').value;
+            const examDate = document.getElementById('subjectExamDate').value;
+            
+            const subject = {
+                id: Date.now(),
+                name,
+                hours,
+                difficulty,
+                examDate,
+                color: subjectColors[subjects.length % subjectColors.length],
+                progress: 0,
+                sessionsCompleted: 0
+            };
+            
+            subjects.push(subject);
+            saveUserData();
+            updateUI();
+            
+            document.getElementById('subjectForm').reset();
+            showNotification(`Subject "${name}" added successfully!`, 'success');
+        }
+        
+        function removeSubject(id) {
+            const subject = subjects.find(s => s.id === id);
+            subjects = subjects.filter(s => s.id !== id);
+            saveUserData();
+            updateUI();
+            showNotification(`Subject "${subject.name}" removed`, 'info');
+        }
+        
+        function renderSubjectList() {
+            const container = document.getElementById('subjectList');
+            
+            if (subjects.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No subjects added yet</p>';
+                return;
+            }
+            
+            container.innerHTML = subjects.map(subject => `
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg group hover:bg-gray-100 transition subject-card">
+                    <div class="w-3 h-3 rounded-full ${subject.color}"></div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-800 text-sm truncate">${subject.name}</p>
+                        <p class="text-xs text-gray-500">${subject.hours}h/week • ${subject.difficulty}</p>
+                        <div class="progress-bar mt-1">
+                            <div class="progress-fill" style="width: ${subject.progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 rounded text-xs difficulty-${subject.difficulty} text-white">${subject.difficulty[0].toUpperCase()}</span>
+                        <button onclick="removeSubject(${subject.id})" class="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ==================== TIMETABLE GENERATION ====================
+        function generateTimetable() {
+            if (subjects.length === 0) {
+                showNotification('Please add at least one subject first!', 'warning');
+                return;
+            }
+            
+            const dailyHours = parseInt(document.getElementById('dailyHours').value);
+            const sessionDuration = parseInt(document.getElementById('sessionDuration').value);
+            const breakDuration = parseInt(document.getElementById('breakDuration').value);
+            
+            timetable = {};
+            
+            const difficultyWeight = { easy: 1, medium: 1.5, hard: 2 };
+            const weightedSubjects = subjects.map(s => ({
+                ...s,
+                weight: s.hours * difficultyWeight[s.difficulty]
+            }));
+            
+            weightedSubjects.sort((a, b) => {
+                if (a.examDate && !b.examDate) return -1;
+                if (!a.examDate && b.examDate) return 1;
+                return b.weight - a.weight;
+            });
+            
+            const dailyMinutes = dailyHours * 60;
+            const sessionWithBreak = sessionDuration + breakDuration;
+            const sessionsPerDay = Math.floor(dailyMinutes / sessionWithBreak);
+            
+            let subjectQueue = [];
+            weightedSubjects.forEach(subject => {
+                const sessionsNeeded = Math.ceil((subject.hours * 60) / sessionDuration);
+                for (let i = 0; i < sessionsNeeded; i++) {
+                    subjectQueue.push(subject);
+                }
+            });
+            
+            subjectQueue = shuffleArray(subjectQueue);
+            
+            let currentTime = 9 * 60;
+            let queueIndex = 0;
+            
+            for (let day = 0; day < 7; day++) {
+                timetable[day] = [];
+                currentTime = 9 * 60;
+                
+                for (let session = 0; session < sessionsPerDay && queueIndex < subjectQueue.length; session++) {
+                    const subject = subjectQueue[queueIndex];
+                    
+                    timetable[day].push({
+                        id: Date.now() + Math.random(),
+                        subject: subject.name,
+                        color: subject.color,
+                        startTime: formatTime(currentTime),
+                        endTime: formatTime(currentTime + sessionDuration),
+                        duration: sessionDuration,
+                        type: 'study',
+                        completed: false
+                    });
+                    
+                    currentTime += sessionDuration;
+                    
+                    if (session < sessionsPerDay - 1) {
+                        timetable[day].push({
+                            id: Date.now() + Math.random(),
+                            subject: 'Break',
+                            color: 'bg-gray-400',
+                            startTime: formatTime(currentTime),
+                            endTime: formatTime(currentTime + breakDuration),
+                            duration: breakDuration,
+                            type: 'break',
+                            completed: false
+                        });
+                        currentTime += breakDuration;
+                    }
+                    
+                    queueIndex++;
+                }
+            }
+            
+            saveUserData();
+            updateUI();
+            
+            const totalHours = subjects.reduce((sum, s) => sum + s.hours, 0);
+            addAIMessage(`I've generated your personalized study timetable! 📅\n\nHere's what I've done:\n• Distributed ${subjects.length} subjects across the week\n• Total weekly study: ${totalHours} hours\n• Prioritized harder subjects in prime study hours\n• Added ${breakDuration}-minute breaks between sessions\n• Each study session is ${sessionDuration} minutes\n\nWould you like me to explain any part of your schedule?`);
+            showNotification('Timetable generated successfully!', 'success');
+        }
+        
+        function regenerateTimetable() {
+            if (subjects.length === 0) {
+                showNotification('Please add at least one subject first!', 'warning');
+                return;
+            }
+            generateTimetable();
+        }
+        
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        function formatTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+            return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+        }
+        
+        function selectDay(dayIndex) {
+            selectedDay = dayIndex;
+            updateDayTabs();
+            renderTimetable();
+        }
+        
+        function updateDayTabs() {
+            const tabs = document.querySelectorAll('.day-tab');
+            tabs.forEach((tab, index) => {
+                if (index === selectedDay) {
+                    tab.classList.add('bg-purple-600', 'text-white');
+                    tab.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+                } else {
+                    tab.classList.remove('bg-purple-600', 'text-white');
+                    tab.classList.add('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+                }
+            });
+            document.getElementById('selectedDayTitle').textContent = `${days[selectedDay]}'s Schedule`;
+        }
+        
+        function renderTimetable() {
+            const container = document.getElementById('timetableDisplay');
+            const daySchedule = timetable[selectedDay] || [];
+            
+            if (daySchedule.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <i class="fas fa-calendar-plus text-4xl mb-3"></i>
+                        <p>Add subjects and generate your AI timetable</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = daySchedule.map((session, index) => `
+                <div class="timetable-card flex items-center gap-4 p-4 bg-gray-50 rounded-xl transition cursor-pointer ${session.completed ? 'opacity-60' : ''}" onclick="toggleSession(${selectedDay}, ${index})">
+                    <div class="w-12 h-12 ${session.color} rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                        ${session.type === 'break' ? '<i class="fas fa-coffee"></i>' : '<i class="fas fa-book"></i>'}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-800 ${session.completed ? 'line-through' : ''}">${session.subject}</p>
+                        <p class="text-sm text-gray-500">${session.startTime} - ${session.endTime} (${session.duration} mins)</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        ${session.type !== 'break' ? `
+                            <div class="w-6 h-6 rounded-full border-2 ${session.completed ? 'bg-green-500 border-green-500' : 'border-gray-300'} flex items-center justify-center">
+                                ${session.completed ? '<i class="fas fa-check text-white text-xs"></i>' : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function toggleSession(day, index) {
+            if (timetable[day][index].type === 'break') return;
+            
+            timetable[day][index].completed = !timetable[day][index].completed;
+            
+            const subject = subjects.find(s => s.name === timetable[day][index].subject);
+            if (subject) {
+                if (timetable[day][index].completed) {
+                    subject.sessionsCompleted++;
+                    completedSessions++;
+                    subject.progress = Math.min(100, (subject.sessionsCompleted / Math.ceil((subject.hours * 60) / parseInt(document.getElementById('sessionDuration').value))) * 100);
+                } else {
+                    subject.sessionsCompleted = Math.max(0, subject.sessionsCompleted - 1);
+                    completedSessions = Math.max(0, completedSessions - 1);
+                    subject.progress = Math.max(0, subject.progress - 10);
+                }
+            }
+            
+            saveUserData();
+            updateUI();
+        }
+        
+        function updateWeeklyOverview() {
+            const container = document.getElementById('weeklyOverview');
+            const dailyHours = parseInt(document.getElementById('dailyHours').value) || 4;
+            
+            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            container.innerHTML = dayNames.map((name, index) => {
+                const daySchedule = timetable[index] || [];
+                const studyMinutes = daySchedule
+                    .filter(s => s.type === 'study')
+                    .reduce((sum, s) => sum + s.duration, 0);
+                const hours = (studyMinutes / 60).toFixed(1);
+                const percentage = Math.min(100, (studyMinutes / (dailyHours * 60)) * 100);
+                
+                return `
+                    <div class="text-center">
+                        <p class="text-xs text-gray-500 mb-2">${name}</p>
+                        <div class="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-1">
+                            <div class="chart-bar w-full gradient-bg rounded transition-all duration-500" style="height: ${percentage}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1">${hours}h</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateProgressSection() {
+            const container = document.getElementById('progressSection');
+            
+            if (subjects.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-sm col-span-2">Add subjects to track progress</p>';
+                return;
+            }
+
+            container.innerHTML = subjects.map(subject => `
+                <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 rounded-full ${subject.color}"></div>
+                            <h3 class="font-semibold text-gray-800">${subject.name}</h3>
+                        </div>
+                        <span class="text-sm font-bold text-purple-600">${Math.round(subject.progress)}%</span>
+                    </div>
+                    <div class="progress-bar mb-2">
+                        <div class="progress-fill" style="width: ${subject.progress}%"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs text-gray-600">
+                        <div>
+                            <p class="font-semibold">${subject.sessionsCompleted}</p>
+                            <p>Sessions</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">${subject.hours}h</p>
+                            <p>Per Week</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold difficulty-${subject.difficulty} text-white rounded px-2 py-1">${subject.difficulty[0].toUpperCase()}</p>
+                            <p>Level</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ==================== POMODORO TIMER ====================
+        function toggleTimer() {
+            timerOpen = !timerOpen;
+            const modal = document.getElementById('timerModal');
+            
+            if (timerOpen) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+                if (timerRunning) pauseTimer();
+            }
+        }
+
+        function startTimer() {
+            if (timerRunning) return;
+            timerRunning = true;
+            
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    timerRunning = false;
+                    
+                    if (isBreakTime) {
+                        isBreakTime = false;
+                        timerSeconds = parseInt(document.getElementById('sessionDuration').value) * 60;
+                        showNotification('Break over! Time to study! 📚', 'success');
+                        playNotificationSound();
+                    } else {
+                        isBreakTime = true;
+                        sessionsToday++;
+                        timerSeconds = parseInt(document.getElementById('breakDuration').value) * 60;
+                        showNotification('Great work! Take a break. ☕', 'success');
+                        playNotificationSound();
+                    }
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerRunning = false;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            isBreakTime = false;
+            timerSeconds = parseInt(document.getElementById('sessionDuration').value) * 60;
+            updateTimerDisplay();
+        }
+
+        function setTimerDuration(minutes) {
+            pauseTimer();
+            timerSeconds = minutes * 60;
+            isBreakTime = false;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timerLabel').textContent = 
+                isBreakTime ? 'Break Time' : 'Study Time';
+            document.getElementById('sessionCount').textContent = sessionsToday;
+        }
+
+        function playNotificationSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+        
+        // ==================== AI CHAT ====================
+        function toggleChat() {
+            chatOpen = !chatOpen;
+            const sidebar = document.getElementById('chatSidebar');
+            const overlay = document.getElementById('chatOverlay');
+            
+            if (chatOpen) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+        
+        function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addUserMessage(message);
+            input.value = '';
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = generateAIResponse(message);
+                addAIMessage(response);
+            }, 1000 + Math.random() * 1000);
+        }
+        
+        function quickChat(message) {
+            document.getElementById('chatInput').value = message;
+            sendMessage(new Event('submit'));
+        }
+        
+        function addUserMessage(message) {
+            const container = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'flex gap-3 justify-end slide-in';
+            messageEl.innerHTML = `
+                <div class="chat-bubble-user rounded-2xl rounded-tr-none p-4 max-w-[80%]">
+                    <p class="text-sm text-white">${escapeHtml(message)}</p>
+                </div>
+            `;
+            container.appendChild(messageEl);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function addAIMessage(message) {
+            const container = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'flex gap-3 slide-in';
+            messageEl.innerHTML = `
+                <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-robot text-white text-sm"></i>
+                </div>
+                <div class="chat-bubble-ai rounded-2xl rounded-tl-none p-4 max-w-[80%]">
+                    <p class="text-sm text-gray-700 whitespace-pre-line">${escapeHtml(message)}</p>
+                </div>
+            `;
+            container.appendChild(messageEl);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const indicator = document.createElement('div');
+            indicator.id = 'typingIndicator';
+            indicator.className = 'flex gap-3 slide-in';
+            indicator.innerHTML = `
+                <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-robot text-white text-sm"></i>
+                </div>
+                <div class="chat-bubble-ai rounded-2xl rounded-tl-none p-4">
+                    <div class="typing-indicator flex gap-1">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(indicator);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+        
+        function generateAIResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            const subjectNames = subjects.map(s => s.name.toLowerCase());
+            const totalHours = subjects.reduce((sum, s) => sum + s.hours, 0);
+            
+            for (const subject of subjects) {
+                if (lowerMessage.includes(subject.name.toLowerCase())) {
+                    return `For ${subject.name}, I've allocated ${subject.hours} hours per week based on its ${subject.difficulty} difficulty level. ${subject.examDate ? `Your exam is on ${subject.examDate}, so I've prioritized this subject.` : ''}\n\nYou've completed ${subject.sessionsCompleted} sessions for this subject. Keep up the great work! 💪`;
+                }
+            }
+            
+            if (lowerMessage.includes('schedule') || lowerMessage.includes('timetable') || lowerMessage.includes('explain')) {
+                if (subjects.length === 0) {
+                    return "You haven't added any subjects yet! Add your subjects with their difficulty levels, and I'll create a personalized study schedule for you. 📚";
+                }
+                return `Your current schedule includes ${subjects.length} subjects with a total of ${totalHours} study hours per week.\n\nHere's how I've organized it:\n• Harder subjects are scheduled during peak focus hours\n• Regular breaks to prevent burnout\n• Balanced distribution across all days\n\nYou've completed ${completedSessions} sessions so far. Keep going! 💪`;
+            }
+            
+            if (lowerMessage.includes('tip') || lowerMessage.includes('advice') || lowerMessage.includes('help')) {
+                const tips = [
+                    "🎯 Use the Pomodoro Technique: Study for 25 minutes, then take a 5-minute break. After 4 sessions, take a longer 15-30 minute break.",
+                    "📱 Put your phone in another room while studying. Out of sight, out of mind!",
+                    "🌙 Get 7-9 hours of sleep. Your brain consolidates memories while you sleep!",
+                    "✍️ Try active recall: Close your notes and try to remember what you just studied.",
+                    "🏃 Take short walks between study sessions. Physical activity boosts brain function!",
+                    "🎵 If you listen to music while studying, choose instrumental tracks without lyrics."
+                ];
+                return tips[Math.floor(Math.random() * tips.length)];
+            }
+            
+            if (lowerMessage.includes('focus') || lowerMessage.includes('concentrate') || lowerMessage.includes('distract')) {
+                return "Here are my top tips for staying focused:\n\n1. 🎯 Clear your study space of distractions\n2. 📵 Use app blockers during study time\n3. ⏰ Set specific goals for each session\n4. 💧 Stay hydrated and have healthy snacks nearby\n5. 🧘 Try a 2-minute breathing exercise before starting\n\nRemember: It's normal for your mind to wander. Gently bring it back without judgment!";
+            }
+            
+            if (lowerMessage.includes('motivat') || lowerMessage.includes('inspire') || lowerMessage.includes('encourage')) {
+                const motivations = [
+                    "🌟 \"The expert in anything was once a beginner.\" - Helen Hayes\n\nEvery study session is a step toward mastery. You've got this!",
+                    "💪 Remember why you started! Your future self will thank you for the effort you're putting in today.",
+                    "🚀 Small consistent efforts beat occasional big efforts. You're building habits that will last a lifetime!",
+                    "🎯 Progress, not perfection! Every page you read, every problem you solve, you're getting better.",
+                    "⭐ You've already shown commitment by being here. That's more than most people do. Keep pushing!"
+                ];
+                return motivations[Math.floor(Math.random() * motivations.length)];
+            }
+            
+            if (lowerMessage.includes('improve') || lowerMessage.includes('better') || lowerMessage.includes('optimize')) {
+                if (subjects.length === 0) {
+                    return "Start by adding your subjects! Once I know what you're studying, I can give you personalized improvement suggestions. 📊";
+                }
+                const hardSubjects = subjects.filter(s => s.difficulty === 'hard');
+                let response = "Here are some suggestions to optimize your study plan:\n\n";
+                
+                if (hardSubjects.length > 0) {
+                    response += `📚 You have ${hardSubjects.length} hard subject(s). Consider studying these in the morning when your focus is highest.\n\n`;
+                }
+                response += "💡 Track which sessions you complete and adjust time for subjects you're struggling with.\n\n";
+                response += "🔄 Regenerate your timetable weekly to keep things fresh!";
+                return response;
+            }
+            
+            const defaults = [
+                "I'm here to help with your studies! You can ask me about your schedule, get study tips, or just chat for motivation. What would you like to know? 📚",
+                "Great question! I can help you understand your timetable, suggest study techniques, or provide motivation. What's on your mind?",
+                "I'm your study buddy! Feel free to ask about your subjects, schedule optimization, or study strategies. How can I assist you today?"
+            ];
+            return defaults[Math.floor(Math.random() * defaults.length)];
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== EXPORT FUNCTIONS ====================
+        function showExportOptions() {
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+        }
+
+        function exportToCSV() {
+            let csv = 'Day,Time,Subject,Duration (mins),Type,Completed\n';
+            
+            for (let day = 0; day < 7; day++) {
+                const daySchedule = timetable[day] || [];
+                daySchedule.forEach(session => {
+                    csv += `${days[day]},"${session.startTime} - ${session.endTime}",${session.subject},${session.duration},${session.type},${session.completed ? 'Yes' : 'No'}\n`;
+                });
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'studymate_timetable.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Timetable exported as CSV', 'success');
+            closeExportModal();
+        }
+
+        function exportToPDF() {
+            let content = 'STUDYMATE AI - WEEKLY TIMETABLE\n';
+            content += '================================\n\n';
+            
+            for (let day = 0; day < 7; day++) {
+                content += `${days[day].toUpperCase()}\n`;
+                content += '----------------------------\n';
+                const daySchedule = timetable[day] || [];
+                if (daySchedule.length === 0) {
+                    content += 'No sessions scheduled\n';
+                } else {
+                    daySchedule.forEach(session => {
+                        content += `${session.startTime} - ${session.endTime}: ${session.subject} (${session.duration} mins)\n`;
+                    });
+                }
+                content += '\n';
+            }
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'studymate_timetable.pdf';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Timetable exported as PDF', 'success');
+            closeExportModal();
+        }
+
+        function exportToJSON() {
+            const data = {
+                user: {
+                    name: currentUser.name,
+                    email: currentUser.email,
+                    createdAt: currentUser.createdAt
+                },
+                subjects: subjects,
+                timetable: timetable,
+                stats: {
+                    completedSessions: completedSessions,
+                    streak: currentUser.streak
+                },
+                preferences: {
+                    dailyHours: document.getElementById('dailyHours').value,
+                    sessionDuration: document.getElementById('sessionDuration').value,
+                    breakDuration: document.getElementById('breakDuration').value
+                },
+                exportedAt: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'studymate_data.json';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Data exported as JSON', 'success');
+            closeExportModal();
+        }
+
+        function printTimetable() {
+            let content = '<html><head><title>StudyMate - Weekly Timetable</title>';
+            content += '<style>body { font-family: Arial; margin: 20px; } h1 { color: #667eea; } table { width: 100%; border-collapse: collapse; margin-top: 20px; } th, td { border: 1px solid #ddd; padding: 12px; text-align: left; } th { background-color: #667eea; color: white; } tr:nth-child(even) { background-color: #f9f9f9; }</style></head><body>';
+            content += '<h1>StudyMate AI - Weekly Timetable</h1>';
+            content += '<p>Generated on: ' + new Date().toLocaleString() + '</p>';
+            content += '<table><tr><th>Day</th><th>Time</th><th>Subject</th><th>Duration</th><th>Status</th></tr>';
+            
+            for (let day = 0; day < 7; day++) {
+                const daySchedule = timetable[day] || [];
+                daySchedule.forEach(session => {
+                    content += `<tr><td>${days[day]}</td><td>${session.startTime} - ${session.endTime}</td><td>${session.subject}</td><td>${session.duration} mins</td><td>${session.completed ? '✓ Completed' : 'Pending'}</td></tr>`;
+                });
+            }
+            
+            content += '</table></body></html>';
+            
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write(content);
+            printWindow.document.close();
+            printWindow.print();
+            
+            closeExportModal();
+        }
+
+        // ==================== NOTIFICATIONS ====================
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification px-6 py-3 rounded-lg text-white text-sm font-medium shadow-lg ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'warning' ? 'bg-yellow-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'warning' ? 'fa-exclamation-circle' :
+                        type === 'error' ? 'fa-times-circle' :
+                        'fa-info-circle'
+                    }"></i>
+                    ${message}
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // ==================== UI UPDATES ====================
+        function updateUI() {
+            renderSubjectList();
+            renderTimetable();
+            updateWeeklyOverview();
+            updateProgressSection();
+            updateStats();
+            updateDayTabs();
+        }
+        
+        function updateStats() {
+            document.getElementById('statSubjects').textContent = subjects.length;
+            document.getElementById('statHours').textContent = document.getElementById('dailyHours').value || 4;
+            document.getElementById('statCompleted').textContent = completedSessions;
+            document.getElementById('statStreak').textContent = currentUser?.streak || 0;
+        }
+        
+        // ==================== INITIALIZATION ====================
+        function init() {
+            const savedEmail = localStorage.getItem('studymate_currentUser');
+            if (savedEmail) {
+                const users = JSON.parse(localStorage.getItem('studymate_users') || '{}');
+                if (users[savedEmail]) {
+                    loginUser(users[savedEmail]);
+                    return;
+                }
+            }
+            
+            document.getElementById('authSection').classList.remove('hidden');
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('timerModal')?.addEventListener('click', function(e) {
+            if (e.target === this) toggleTimer();
+        });
+
+        document.getElementById('exportModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeExportModal();
+        });
+        
+        init();
+    </script>
+</body>
+</html>
